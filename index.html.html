@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une invitation pour toi 💌</title>
+<style>
+:root{--bg:#fff1f3;--card:#fff;--ink:#3a1f2b;--accent:#e11d48;--soft:#ffe0e6;--muted:#8a6573}
+@media (prefers-color-scheme:dark){:root{--bg:#2a1219;--card:#3a1b25;--ink:#ffe8ed;--accent:#fb7185;--soft:#53242f;--muted:#e0a9b6}}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center;padding:16px;min-height:100vh}
+.card{background:var(--card);border-radius:24px;padding:32px 24px;max-width:440px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(225,29,72,.15)}
+h1{font-size:1.7rem;margin:0 0 8px}
+p{color:var(--muted);margin:0 0 20px}
+.big{font-size:3rem;margin-bottom:8px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,a.btn{font:inherit;border:0;border-radius:14px;padding:14px 10px;background:var(--soft);color:var(--ink);cursor:pointer;transition:transform .1s;text-decoration:none;display:block}
+button:hover,a.btn:hover{transform:scale(1.04)}
+.main{background:var(--accent)!important;color:#fff!important;font-weight:600;grid-column:1/-1}
+.dots{display:flex;gap:6px;justify-content:center;margin-bottom:18px}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--soft)}
+.dots i.on{background:var(--accent)}
+.recap{background:var(--soft);border-radius:14px;padding:12px;margin:0 0 16px}
+.stack a.btn{margin-top:10px}
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+const WHERE=["🍝 Italien","🍣 Sushis","🍔 Burger","🥖 Français","🍛 Indien","🥙 Libanais","🍕 Pizza","🎲 Surprise !"];
+const WHEN=["12h00","12h30","13h00","19h00","19h30","20h00","20h30","21h00"];
+const P=new URLSearchParams(location.search);
+const W=(P.get("w")||"").replace(/\D/g,""),E=P.get("e")||"",S=(P.get("s")||"").replace(/[^\d+]/g,"");
+const state={step:0,where:null,when:null};
+const app=document.getElementById("app");
+const dots=()=>'<div class="dots">'+[0,1,2,3].map(i=>'<i class="'+(i<=state.step?'on':'')+'"></i>').join('')+'</div>';
+function render(){
+  let h=dots();
+  if(state.step===0)h+='<div class="big">💌</div><h1>Veux-tu manger avec moi ?</h1><p>J’ai une petite question pour toi…</p><div class="opts"><button class="main" id="yes">Oui, avec plaisir ! 💖</button></div>';
+  else if(state.step===1)h+='<h1>Où ça ?</h1><p>Choisis ce qui te fait envie</p><div class="opts">'+WHERE.map((w,i)=>'<button data-w="'+i+'">'+w+'</button>').join('')+'</div>';
+  else if(state.step===2)h+='<h1>À quelle heure ?</h1><p>Choisis un horaire</p><div class="opts">'+WHEN.map((w,i)=>'<button data-t="'+i+'">'+w+'</button>').join('')+'</div>';
+  else{
+    const txt="Oui je veux bien manger avec toi ! 🍽️ "+state.where+" à "+state.when+" ❤️ J’ai hâte de te revoir !";
+    const q=encodeURIComponent(txt);let b="";
+    if(W)b+='<a class="btn main" href="https://wa.me/'+W+'?text='+q+'">Envoyer ma réponse (WhatsApp) 💌</a>';
+    if(S)b+='<a class="btn '+(W?'':'main')+'" href="sms:'+S+'?&body='+q+'">Envoyer par SMS</a>';
+    if(E)b+='<a class="btn '+(W||S?'':'main')+'" href="mailto:'+E+'?subject='+encodeURIComponent("Ma réponse 💌")+'&body='+q+'">Envoyer par e-mail</a>';
+    if(!W&&!S&&!E)b='<a class="btn main" href="https://wa.me/?text='+q+'">Envoyer ma réponse (WhatsApp) 💌</a><a class="btn" href="sms:?&body='+q+'">Envoyer par SMS</a>';
+    h+='<div class="big">❤️</div><h1>J’ai hâte de te revoir !</h1><div class="recap">🍽️ '+state.where+'<br>🕒 '+state.when+'</div><p>Appuie sur le bouton pour m’envoyer ta réponse</p><div class="stack">'+b+'</div>';
+  }
+  app.innerHTML=h;
+  if(state.step===0)document.getElementById("yes").onclick=()=>{state.step=1;render()};
+  app.querySelectorAll("[data-w]").forEach(x=>x.onclick=()=>{state.where=WHERE[x.dataset.w];state.step=2;render()});
+  app.querySelectorAll("[data-t]").forEach(x=>x.onclick=()=>{state.when=WHEN[x.dataset.t];state.step=3;render()});
+}
+render();
+</script>
+</body>
+</html>
